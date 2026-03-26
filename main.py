@@ -50,7 +50,7 @@ def create_task(payload: TaskCreate):
 
 @app.get('/book')
 def get_book():
-    return "Любимая книга: {book}"
+    return f"Любимая книга: {book}"
 
 
 @app.post("/book", status_code=status.HTTP_201_CREATED)
