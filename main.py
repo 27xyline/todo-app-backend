@@ -31,7 +31,10 @@ class TaskCreate(BaseModel):
 tasks: list[Task] = []
 
 
-book = str
+class BookIn(BaseModel):
+    book: str
+
+book: str = ""
 
 
 @app.get("/tasks", response_model=list[Task])
@@ -54,6 +57,7 @@ def get_book():
 
 
 @app.post("/book", status_code=status.HTTP_201_CREATED)
-def create_book(payload: str):
+def create_book(payload: BookIn):
     global book
-    book = payload
+    book = payload.book
+    return {"message": "Успешно добавлена"}
