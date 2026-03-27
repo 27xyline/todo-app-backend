@@ -9,13 +9,12 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-    ],
+    allow_origins=[ "http://localhost:3000"],
     allow_methods=["*"],
     allow_headers=["*"],
     allow_credentials=True,
 )
+
 
 class Task(BaseModel):
     """Модель задачи"""
@@ -26,14 +25,13 @@ class Task(BaseModel):
 
 class TaskCreate(BaseModel):
     title: str
-    age: int
-
-tasks: list[Task] = []
 
 
-class BookIn(BaseModel):
+class BookCreate(BaseModel):
     book: str
 
+
+tasks: list[Task] = []
 book: str = ""
 
 
@@ -51,13 +49,15 @@ def create_task(payload: TaskCreate):
     return task
 
 
-@app.get('/book')
+@app.get("/book")
 def get_book():
-    return f"Любимая книга: {book}"
+    """Получить любимую книгу"""
+    return {"book": book, "status": "succeeded", "message": f"Любимая книга: {book}"}
 
 
 @app.post("/book", status_code=status.HTTP_201_CREATED)
-def create_book(payload: BookIn):
+def create_book(payload: BookCreate):
+    """Сохранить любимую книгу"""
     global book
     book = payload.book
-    return {"message": "Успешно добавлена"}
+    return {"book": book, "status": "succeeded"}
