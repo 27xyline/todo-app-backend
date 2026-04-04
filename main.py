@@ -79,6 +79,9 @@ def delete_task(task_id: str):
         if task.id == task_id:
             tasks.remove(task)
             return
+        
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Задача не найдена")
+
 
 @app.get("/book")
 def get_book():
