@@ -122,7 +122,7 @@ def update_category(category_id: str, payload: CategoryUpdate):
     for category in categories:
         if category.id == category_id:
             category.name = payload.name
-        return category
+            return category
     
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Задача не найдена")
 
