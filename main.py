@@ -1,9 +1,9 @@
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
@@ -19,7 +19,7 @@ app.add_middleware(
 # МОДЕЛИ ДЛЯ ЗАДАЧ
 class Task(BaseModel):
     """Модель задачи"""
-    id: str
+    id: UUID
     title: str
     completed: bool = False
 
@@ -36,7 +36,7 @@ class TaskUpdate(BaseModel):
 # МОДЕЛИ ДЛЯ КАТЕГОРИЙ
 class Category(BaseModel):
     """Модель категории """
-    id: str
+    id: UUID
     name: str
 
 
@@ -45,7 +45,7 @@ class CategoryCreate(BaseModel):
 
 
 class CategoryUpdate(BaseModel):
-    name: str
+    name: str | None = None
 
 
 # БАЗА ДАННЫХ
@@ -63,7 +63,7 @@ def get_tasks():
 @app.post("/tasks", response_model=Task, status_code=status.HTTP_201_CREATED, tags=["ЗАДАЧИ"])
 def create_task(payload: TaskCreate):
     """Создать новую задачу"""
-    task = Task(id=str(uuid4()), title=payload.title, completed=False)
+    task = Task(id=uuid4(), title=payload.title, completed=False)
     tasks.append(task)
     return task
 
@@ -107,7 +107,7 @@ def get_categories():
 @app.post("/categories", response_model=Category, status_code=status.HTTP_201_CREATED, tags=["КАТЕГОРИИ"])
 def create_category(payload: CategoryCreate):
     """Создать новую категорию"""
-    category = Category(id=str(uuid4()), name=payload.name)
+    category = Category(id=uuid4(), name=payload.name)
     categories.append(category)
     return category
 
