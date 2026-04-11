@@ -147,9 +147,9 @@ def update_task(task_id: UUID, payload: TaskUpdate, db: Session = Depends(get_db
     task = db.get(TaskORM, task_id)
     if task is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Задача не найдена")
-    if payload.title is not None:
+    if payload.title:
         task.title = payload.title
-    if payload.completed is not None:
+    if payload.completed:
         task.completed = payload.completed
     db.commit()
     return task_to_model(task)
@@ -192,7 +192,7 @@ def update_category(category_id: UUID, payload: CategoryUpdate, db: Session = De
     category = db.get(CategoryORM, category_id)
     if category is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Категория не найдена")
-    if payload.name is not None:
+    if payload.name:
         category.name = payload.name
     db.commit()
     return category_to_model(category)
