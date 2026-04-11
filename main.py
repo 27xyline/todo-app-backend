@@ -59,10 +59,14 @@ def get_db():
         db.close()
 
 
-def _strip_and_validate(value: str, field_label: str) -> str:
+def _strip_and_validate(value: str | None, field_label: str) -> str | None:
+    if value is None:
+        return None
     value = value.strip()
     if not value:
         raise ValueError(f"Название {field_label} не может быть пустым")
+    if len(value) > 200:
+        raise ValueError(f"Название {field_label} не может быть длиннее 200 символов")
     return value
 
 
@@ -74,7 +78,7 @@ class Task(BaseModel):
 
 
 class TaskCreate(BaseModel):
-    title: str = Field(min_length=1, max_length=200)
+    title: str
 
     @field_validator("title")
     @classmethod
@@ -83,12 +87,12 @@ class TaskCreate(BaseModel):
 
 
 class TaskUpdate(BaseModel):
-    title: str | None = Field(default=None, min_length=1, max_length=200)
+    title: str | None = None
     completed: bool | None = None
 
     @field_validator("title")
     @classmethod
-    def validate_title(cls, value: str) -> str:
+    def validate_title(cls, value: str | None) -> str | None:
         return _strip_and_validate(value, "задачи")
 
 
@@ -99,7 +103,7 @@ class Category(BaseModel):
 
 
 class CategoryCreate(BaseModel):
-    name: str = Field(min_length=1, max_length=200)
+    name: str
 
     @field_validator("name")
     @classmethod
@@ -108,11 +112,11 @@ class CategoryCreate(BaseModel):
 
 
 class CategoryUpdate(BaseModel):
-    name: str | None = Field(default=None, min_length=1, max_length=200)
+    name: str | None = None
 
     @field_validator("name")
     @classmethod
-    def validate_name(cls, value: str) -> str:
+    def validate_name(ccls, value: str | None) -> str | None:
         return _strip_and_validate(value, "категории")
 
 
