@@ -31,7 +31,7 @@ class TaskService:
     
     def update_task(self, task_id: UUID, payload: TaskUpdate) -> TaskRead:
         task = self.repository.get_by_id(task_id)
-        if payload.title:
+        if payload.title is not None:
             task.title = payload.title
         if payload.completed is not None:
             task.completed = payload.completed
