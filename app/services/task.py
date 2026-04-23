@@ -31,16 +31,22 @@ class TaskService:
     
     def update_task(self, task_id: UUID, payload: TaskUpdate) -> TaskRead:
         task = self.repository.get_by_id(task_id)
+        if task is None:
+            raise TaskNotFoundError
+        
         if payload.title is not None:
             task.title = payload.title
         if payload.completed is not None:
             task.completed = payload.completed
+
         self.db.commit()
         return TaskRead.model_validate(task)
     
 
-    def delete_task(self, task_id: UUID):
+    def delete_task(self, task_id: UUID) -> None:
         task = self.repository.get_by_id(task_id)
+        if task is None:
+            raise TaskNotFoundError
 
         self.repository.delete(task)
         self.db.commit()
