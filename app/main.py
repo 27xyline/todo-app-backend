@@ -7,6 +7,7 @@ from app.api.router import api_router
 from app.core.config import get_settings
 from app.models.base import Base
 from app.models.task import TaskORM
+from app.models.category import CategoryORM
 from app.db.session import engine
 
 
@@ -23,7 +24,7 @@ app.include_router(api_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=settings.cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
     allow_credentials=True,
