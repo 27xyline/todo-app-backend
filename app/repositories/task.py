@@ -13,7 +13,7 @@ class TaskRepository:
         self.db = db
 
     def get_all(self) -> list[TaskORM]:
-        return self.db.scalars(select(TaskORM)).all()
+        return list(self.db.scalars(select(TaskORM)).all())
 
     def get_by_id(self, task_id: UUID) -> TaskORM | None:
         return self.db.get(TaskORM, task_id)

@@ -1,3 +1,14 @@
+from typing import overload
+
+
+@overload
+def _strip_and_validate(value: str, field_label: str) -> str: ...
+
+
+@overload
+def _strip_and_validate(value: None, field_label: str) -> None: ...
+
+
 def _strip_and_validate(value: str | None, field_label: str) -> str | None:
     if value is None:
         return None

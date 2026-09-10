@@ -13,7 +13,7 @@ class CategoryRepository:
         self.db = db
 
     def get_all(self) -> list[CategoryORM]:
-        return self.db.scalars(select(CategoryORM)).all()
+        return list(self.db.scalars(select(CategoryORM)).all())
 
     def get_by_id(self, category_id: UUID) -> CategoryORM | None:
         return self.db.get(CategoryORM, category_id)

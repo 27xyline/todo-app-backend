@@ -16,4 +16,5 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    # Значения обязательных полей загружаются BaseSettings из .env во время запуска.
+    return Settings()  # type: ignore[call-arg]
