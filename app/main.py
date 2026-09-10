@@ -13,6 +13,7 @@ configure_logging()
 settings = get_settings()
 app = FastAPI()
 logger = logging.getLogger("app.middleware")
+request_number = 0
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,7 +24,12 @@ app.add_middleware(
 )
 
 @app.middleware("http")
-async def log_requests(request: Request, call_next):
+async def log_requests(request: Request, call_next) -> Response:
+    global request_number
+
+    request_number += 1
+    current_request_number = request_number
+
     started_at = perf_counter()
     try:
         response: Response = await call_next(request)
@@ -36,6 +42,8 @@ async def log_requests(request: Request, call_next):
             duration_ms,
         )
         raise
+
+    response.headers["X-Request-Number"] = str(current_request_number)
 
     duration_ms = (perf_counter() - started_at) * 1000
     logger.info(
