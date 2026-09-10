@@ -23,6 +23,7 @@ app.add_middleware(
     allow_credentials=True,
 )
 
+
 @app.middleware("http")
 async def log_requests(request: Request, call_next) -> Response:
     global request_number

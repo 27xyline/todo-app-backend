@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from pydantic import BaseModel, field_validator, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from app.schemas.validators import _strip_and_validate
 
@@ -20,7 +20,6 @@ class TaskCreate(BaseModel):
     @classmethod
     def validate_title(cls, value: str) -> str:
         return _strip_and_validate(value, "задачи")
-
 
 
 class TaskUpdate(BaseModel):
