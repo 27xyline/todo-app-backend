@@ -14,6 +14,18 @@ def get_tasks(service: TaskService = Depends(get_task_service)) -> list[TaskRead
     return service.list_tasks()
 
 
+@router.get("/{task_id}", response_model=TaskRead, status_code=status.HTTP_200_OK)
+def get_task(
+    task_id: UUID, service: TaskService = Depends(get_task_service)
+) -> TaskRead:
+    try:
+        return service.get(task_id)
+    except TaskNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Задача не найдена"
+        )
+
+
 @router.post("", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
 def create_task(
     payload: TaskCreate, service: TaskService = Depends(get_task_service)

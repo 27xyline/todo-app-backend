@@ -13,9 +13,16 @@ class TaskNotFoundError(Exception):
 class TaskService:
     """Ключевые операции с задачами, включая бизнес-логику, валидацию и прочее"""
 
-    def __init__(self, db: Session):
+    def __init__(self, db: Session) -> None:
         self.db = db
         self.repository = TaskRepository(db)
+
+    def get(self, task_id: UUID) -> TaskRead:
+        task = self.repository.get_by_id(task_id)
+        if task is None:
+            raise TaskNotFoundError
+
+        return TaskRead.model_validate(task)
 
     def list_tasks(self) -> list[TaskRead]:
         tasks = self.repository.get_all()
