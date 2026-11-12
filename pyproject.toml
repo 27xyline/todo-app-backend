@@ -22,6 +22,9 @@ dev = [
     "ruff==0.16.6",
 ]
 
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
 [tool.ruff]
 # Под какую версию Python проверять синтаксис и правила
 target-version = "py314"
