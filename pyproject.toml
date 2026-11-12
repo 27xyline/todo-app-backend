@@ -1,3 +1,27 @@
+[project]
+name = "petproject"
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "alembic==1.18.4",
+    "fastapi==0.135.2",
+    "psycopg[binary]==3.3.3",
+    "pydantic==2.12.5",
+    "pydantic-settings==2.14.0",
+    "sqlalchemy==2.0.49",
+    "uvicorn==0.42.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx",
+    "mypy==2.3.1",
+    "pre-commit==4.6.2",
+    "pytest",
+    "ruff==0.16.6",
+]
+
 [tool.ruff]
 # Под какую версию Python проверять синтаксис и правила
 target-version = "py314"
