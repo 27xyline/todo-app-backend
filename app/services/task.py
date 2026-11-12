@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.task import TaskRepository
 from app.schemas.task import TaskCreate, TaskRead, TaskUpdate
@@ -13,28 +13,28 @@ class TaskNotFoundError(Exception):
 class TaskService:
     """Ключевые операции с задачами, включая бизнес-логику, валидацию и прочее"""
 
-    def __init__(self, db: Session) -> None:
+    def __init__(self, db: AsyncSession) -> None:
         self.db = db
         self.repository = TaskRepository(db)
 
-    def get(self, task_id: UUID) -> TaskRead:
-        task = self.repository.get_by_id(task_id)
+    async def get(self, task_id: UUID) -> TaskRead:
+        task = await self.repository.get_by_id(task_id)
         if task is None:
             raise TaskNotFoundError
 
         return TaskRead.model_validate(task)
 
-    def list_tasks(self) -> list[TaskRead]:
-        tasks = self.repository.get_all()
+    async def list_tasks(self) -> list[TaskRead]:
+        tasks = await self.repository.get_all()
         return [TaskRead.model_validate(task) for task in tasks]
 
-    def create_task(self, payload: TaskCreate) -> TaskRead:
-        task = self.repository.create(title=payload.title)
-        self.db.commit()
+    async def create_task(self, payload: TaskCreate) -> TaskRead:
+        task = await self.repository.create(title=payload.title)
+        await self.db.commit()
         return TaskRead.model_validate(task)
 
-    def update_task(self, task_id: UUID, payload: TaskUpdate) -> TaskRead:
-        task = self.repository.get_by_id(task_id)
+    async def update_task(self, task_id: UUID, payload: TaskUpdate) -> TaskRead:
+        task = await self.repository.get_by_id(task_id)
         if task is None:
             raise TaskNotFoundError
 
@@ -43,13 +43,13 @@ class TaskService:
         if payload.completed is not None:
             task.completed = payload.completed
 
-        self.db.commit()
+        await self.db.commit()
         return TaskRead.model_validate(task)
 
-    def delete_task(self, task_id: UUID) -> None:
-        task = self.repository.get_by_id(task_id)
+    async def delete_task(self, task_id: UUID) -> None:
+        task = await self.repository.get_by_id(task_id)
         if task is None:
             raise TaskNotFoundError
 
-        self.repository.delete(task)
-        self.db.commit()
+        await self.repository.delete(task)
+        await self.db.commit()
