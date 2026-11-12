@@ -3,21 +3,28 @@ repos:
     hooks:
       - id: ruff-check
         name: ruff check --fix
-        entry: .venv/bin/ruff check . --fix
+        entry: uv run ruff check . --fix
         language: system
         pass_filenames: false
-        types_or: [python]
+        always_run: true
 
       - id: ruff-format
         name: ruff format
-        entry: .venv/bin/ruff format .
+        entry: uv run ruff format .
         language: system
         pass_filenames: false
-        types_or: [python]
+        always_run: true
 
       - id: mypy
         name: mypy
-        entry: .venv/bin/mypy app
+        entry: uv run mypy app
         language: system
         pass_filenames: false
-        types_or: [python]
+        always_run: true
+
+      - id: pytest
+        name: pytest
+        entry: uv run pytest
+        language: system
+        pass_filenames: false
+        always_run: true

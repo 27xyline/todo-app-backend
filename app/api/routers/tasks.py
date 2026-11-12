@@ -10,16 +10,17 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
 @router.get("", response_model=list[TaskRead], status_code=status.HTTP_200_OK)
-def get_tasks(service: TaskService = Depends(get_task_service)) -> list[TaskRead]:
-    return service.list_tasks()
+async def get_tasks(service: TaskService = Depends(get_task_service)) -> list[TaskRead]:
+    return await service.list_tasks()
 
 
 @router.get("/{task_id}", response_model=TaskRead, status_code=status.HTTP_200_OK)
-def get_task(
-    task_id: UUID, service: TaskService = Depends(get_task_service)
+async def get_task(
+    task_id: UUID,
+    service: TaskService = Depends(get_task_service),
 ) -> TaskRead:
     try:
-        return service.get(task_id)
+        return await service.get(task_id)
     except TaskNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Задача не найдена"
@@ -27,18 +28,21 @@ def get_task(
 
 
 @router.post("", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
-def create_task(
-    payload: TaskCreate, service: TaskService = Depends(get_task_service)
+async def create_task(
+    payload: TaskCreate,
+    service: TaskService = Depends(get_task_service),
 ) -> TaskRead:
-    return service.create_task(payload)
+    return await service.create_task(payload)
 
 
 @router.patch("/{task_id}", response_model=TaskRead, status_code=status.HTTP_200_OK)
-def update_task(
-    task_id: UUID, payload: TaskUpdate, service: TaskService = Depends(get_task_service)
+async def update_task(
+    task_id: UUID,
+    payload: TaskUpdate,
+    service: TaskService = Depends(get_task_service),
 ) -> TaskRead:
     try:
-        return service.update_task(task_id, payload)
+        return await service.update_task(task_id, payload)
     except TaskNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Задача не найдена"
@@ -46,11 +50,12 @@ def update_task(
 
 
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_task(
-    task_id: UUID, service: TaskService = Depends(get_task_service)
+async def delete_task(
+    task_id: UUID,
+    service: TaskService = Depends(get_task_service),
 ) -> None:
     try:
-        service.delete_task(task_id)
+        await service.delete_task(task_id)
     except TaskNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Задача не найдена"

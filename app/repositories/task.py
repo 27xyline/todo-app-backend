@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.task import TaskORM
 
@@ -9,19 +9,20 @@ from app.models.task import TaskORM
 class TaskRepository:
     """Ключевые операции с таблицей tasks в БД"""
 
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.db = db
 
-    def get_all(self) -> list[TaskORM]:
-        return list(self.db.scalars(select(TaskORM)).all())
+    async def get_all(self) -> list[TaskORM]:
+        result = await self.db.scalars(select(TaskORM))
+        return list(result)
 
-    def get_by_id(self, task_id: UUID) -> TaskORM | None:
-        return self.db.get(TaskORM, task_id)
+    async def get_by_id(self, task_id: UUID) -> TaskORM | None:
+        return await self.db.get(TaskORM, task_id)
 
-    def create(self, title: str) -> TaskORM:
+    async def create(self, title: str) -> TaskORM:
         task = TaskORM(title=title, completed=False)
         self.db.add(task)
         return task
 
-    def delete(self, task: TaskORM) -> None:
-        self.db.delete(task)
+    async def delete(self, task: TaskORM) -> None:
+        await self.db.delete(task)
