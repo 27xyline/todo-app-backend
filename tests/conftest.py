@@ -1,11 +1,11 @@
 import os
-from collections.abc import Generator
+from collections.abc import AsyncGenerator, Generator
 
 import pytest
-from fastapi.testclient import TestClient
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import create_engine, make_url, text
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 from app.core.config import get_settings
 from app.models.base import Base
@@ -59,24 +59,39 @@ def test_engine() -> Generator[Engine, None, None]:
         get_settings.cache_clear()
 
 
+@pytest.fixture(scope="session")
+def anyio_backend() -> str:
+    return "asyncio"
+
+
 @pytest.fixture
-def client(test_engine: Engine) -> Generator[TestClient, None, None]:
+async def client(test_engine: Engine) -> AsyncGenerator[AsyncClient, None]:
     from app.db.session import get_db
     from app.main import app
 
-    with test_engine.connect() as connection:
-        transaction = connection.begin()
-        with Session(
-            bind=connection, join_transaction_mode="create_savepoint"
-        ) as session:
-
-            def override_get_db() -> Generator[Session, None, None]:
-                yield session
-
-            app.dependency_overrides[get_db] = override_get_db
+    engine = create_async_engine(test_engine.url)
+    try:
+        async with engine.connect() as connection:
+            transaction = await connection.begin()
             try:
-                with TestClient(app) as test_client:
-                    yield test_client
+                async with AsyncSession(
+                    bind=connection,
+                    join_transaction_mode="create_savepoint",
+                    expire_on_commit=False,
+                ) as session:
+
+                    async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
+                        yield session
+
+                    app.dependency_overrides[get_db] = override_get_db
+                    try:
+                        async with AsyncClient(
+                            transport=ASGITransport(app=app), base_url="http://test"
+                        ) as test_client:
+                            yield test_client
+                    finally:
+                        app.dependency_overrides.pop(get_db, None)
             finally:
-                app.dependency_overrides.pop(get_db, None)
-                transaction.rollback()
+                await transaction.rollback()
+    finally:
+        await engine.dispose()
