@@ -1,5 +1,6 @@
 import os
 from collections.abc import AsyncGenerator, Generator
+from uuid import uuid4
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -46,12 +47,20 @@ def test_engine() -> Generator[Engine, None, None]:
     os.environ["DATABASE_URL"] = test_url.render_as_string(hide_password=False)
     os.environ.setdefault("CORS_ORIGINS", "[]")
     get_settings.cache_clear()
-    engine = create_engine(test_url)
+    schema = f"test_{uuid4().hex}"
+    schema_engine = create_engine(test_url)
+    with schema_engine.begin() as connection:
+        connection.exec_driver_sql(f'CREATE SCHEMA "{schema}"')
+    schema_url = test_url.update_query_dict({"options": f"-csearch_path={schema}"})
+    engine = create_engine(schema_url)
     try:
         Base.metadata.create_all(engine)
         yield engine
     finally:
         engine.dispose()
+        with schema_engine.begin() as connection:
+            connection.exec_driver_sql(f'DROP SCHEMA "{schema}" CASCADE')
+        schema_engine.dispose()
         if previous_database_url is None:
             os.environ.pop("DATABASE_URL", None)
         else:

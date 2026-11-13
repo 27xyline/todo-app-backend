@@ -2,12 +2,9 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import CategoryNotFoundError
 from app.repositories.category import CategoryRepository
 from app.schemas.category import CategoryCreate, CategoryRead, CategoryUpdate
-
-
-class CategoryNotFoundError(Exception):
-    pass
 
 
 class CategoryService:
