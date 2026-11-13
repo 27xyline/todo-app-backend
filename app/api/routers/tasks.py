@@ -3,8 +3,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies import get_task_service
+from app.core.exceptions import CategoryNotFoundError, TaskNotFoundError
 from app.schemas.task import TaskCreate, TaskRead, TaskUpdate
-from app.services.task import TaskNotFoundError, TaskService
+from app.services.task import TaskService
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -32,7 +33,12 @@ async def create_task(
     payload: TaskCreate,
     service: TaskService = Depends(get_task_service),
 ) -> TaskRead:
-    return await service.create_task(payload)
+    try:
+        return await service.create_task(payload)
+    except CategoryNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Категория не найдена"
+        )
 
 
 @router.patch("/{task_id}", response_model=TaskRead, status_code=status.HTTP_200_OK)
@@ -46,6 +52,10 @@ async def update_task(
     except TaskNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Задача не найдена"
+        )
+    except CategoryNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Категория не найдена"
         )
 
 

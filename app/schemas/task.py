@@ -11,10 +11,12 @@ class TaskRead(BaseModel):
     id: UUID
     title: str
     completed: bool = False
+    category_id: UUID | None
 
 
 class TaskCreate(BaseModel):
     title: str
+    category_id: UUID | None = None
 
     @field_validator("title")
     @classmethod
@@ -25,6 +27,7 @@ class TaskCreate(BaseModel):
 class TaskUpdate(BaseModel):
     title: str | None = None
     completed: bool | None = None
+    category_id: UUID | None = None
 
     @field_validator("title")
     @classmethod

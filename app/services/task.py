@@ -2,12 +2,10 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import CategoryNotFoundError, TaskNotFoundError
+from app.repositories.category import CategoryRepository
 from app.repositories.task import TaskRepository
 from app.schemas.task import TaskCreate, TaskRead, TaskUpdate
-
-
-class TaskNotFoundError(Exception):
-    pass
 
 
 class TaskService:
@@ -16,6 +14,7 @@ class TaskService:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
         self.repository = TaskRepository(db)
+        self.category_repository = CategoryRepository(db)
 
     async def get(self, task_id: UUID) -> TaskRead:
         task = await self.repository.get_by_id(task_id)
@@ -29,7 +28,15 @@ class TaskService:
         return [TaskRead.model_validate(task) for task in tasks]
 
     async def create_task(self, payload: TaskCreate) -> TaskRead:
-        task = await self.repository.create(title=payload.title)
+        if payload.category_id is not None:
+            existing = await self.category_repository.get_by_id(payload.category_id)
+            if not existing:
+                raise CategoryNotFoundError
+
+        task = await self.repository.create(
+            title=payload.title,
+            category_id=payload.category_id,
+        )
         await self.db.commit()
         return TaskRead.model_validate(task)
 
@@ -38,10 +45,17 @@ class TaskService:
         if task is None:
             raise TaskNotFoundError
 
+        if payload.category_id is not None:
+            existing = await self.category_repository.get_by_id(payload.category_id)
+            if not existing:
+                raise CategoryNotFoundError
+
         if payload.title is not None:
             task.title = payload.title
         if payload.completed is not None:
             task.completed = payload.completed
+        if "category_id" in payload.model_fields_set:
+            task.category_id = payload.category_id
 
         await self.db.commit()
         return TaskRead.model_validate(task)

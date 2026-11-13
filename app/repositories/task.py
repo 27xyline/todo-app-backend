@@ -19,8 +19,12 @@ class TaskRepository:
     async def get_by_id(self, task_id: UUID) -> TaskORM | None:
         return await self.db.get(TaskORM, task_id)
 
-    async def create(self, title: str) -> TaskORM:
-        task = TaskORM(title=title, completed=False)
+    async def create(self, title: str, category_id: UUID | None) -> TaskORM:
+        task = TaskORM(
+            title=title,
+            completed=False,
+            category_id=category_id,
+        )
         self.db.add(task)
         return task
 
