@@ -4,3 +4,7 @@ class TaskNotFoundError(Exception):
 
 class CategoryNotFoundError(Exception):
     pass
+
+
+class CategoryNameConflictError(Exception):
+    pass

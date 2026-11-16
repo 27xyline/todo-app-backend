@@ -1,10 +1,10 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 
 from app.api.dependencies import get_category_service
 from app.schemas.category import CategoryCreate, CategoryRead, CategoryUpdate
-from app.services.category import CategoryNotFoundError, CategoryService
+from app.services.category import CategoryService
 
 router = APIRouter(prefix="/categories", tags=["categories"])
 
@@ -32,12 +32,7 @@ async def update_category(
     payload: CategoryUpdate,
     service: CategoryService = Depends(get_category_service),
 ) -> CategoryRead:
-    try:
-        return await service.update_category(category_id, payload)
-    except CategoryNotFoundError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Категория не найдена"
-        )
+    return await service.update_category(category_id, payload)
 
 
 @router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -45,9 +40,4 @@ async def delete_category(
     category_id: UUID,
     service: CategoryService = Depends(get_category_service),
 ) -> None:
-    try:
-        await service.delete_category(category_id)
-    except CategoryNotFoundError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Категория не найдена"
-        )
+    await service.delete_category(category_id)

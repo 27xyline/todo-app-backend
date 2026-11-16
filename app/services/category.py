@@ -1,8 +1,9 @@
 from uuid import UUID
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import CategoryNotFoundError
+from app.core.exceptions import CategoryNameConflictError, CategoryNotFoundError
 from app.repositories.category import CategoryRepository
 from app.schemas.category import CategoryCreate, CategoryRead, CategoryUpdate
 
@@ -20,7 +21,7 @@ class CategoryService:
 
     async def create_category(self, payload: CategoryCreate) -> CategoryRead:
         category = await self.repository.create(name=payload.name)
-        await self.db.commit()
+        await self._commit_category()
         return CategoryRead.model_validate(category)
 
     async def update_category(
@@ -33,7 +34,7 @@ class CategoryService:
         if payload.name is not None:
             category.name = payload.name
 
-        await self.db.commit()
+        await self._commit_category()
         return CategoryRead.model_validate(category)
 
     async def delete_category(self, category_id: UUID) -> None:
@@ -43,3 +44,17 @@ class CategoryService:
 
         await self.repository.delete(category)
         await self.db.commit()
+
+    async def _commit_category(self) -> None:
+        try:
+            await self.db.commit()
+        except IntegrityError as exc:
+            await self.db.rollback()
+            original = exc.orig
+            diag = getattr(original, "diag", None)
+            if (
+                getattr(original, "sqlstate", None) == "23505"
+                and getattr(diag, "constraint_name", None) == "uq_categories_name"
+            ):
+                raise CategoryNameConflictError from exc
+            raise
