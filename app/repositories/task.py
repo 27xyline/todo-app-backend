@@ -12,8 +12,31 @@ class TaskRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_all(self) -> list[TaskORM]:
-        result = await self.db.scalars(select(TaskORM))
+    async def get_all(
+        self,
+        *,
+        title_contains: str | None,
+        completed: bool | None,
+        category_id: UUID | None,
+        limit: int,
+        offset: int,
+    ) -> list[TaskORM]:
+        query = (
+            select(TaskORM)
+            .order_by(TaskORM.created_at.desc(), TaskORM.id.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        if title_contains is not None:
+            query = query.where(
+                TaskORM.title.icontains(title_contains, autoescape=True)
+            )
+        if completed is not None:
+            query = query.where(TaskORM.completed == completed)
+        if category_id is not None:
+            query = query.where(TaskORM.category_id == category_id)
+
+        result = await self.db.scalars(query)
         return list(result)
 
     async def get_by_id(self, task_id: UUID) -> TaskORM | None:
