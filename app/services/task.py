@@ -23,8 +23,22 @@ class TaskService:
 
         return TaskRead.model_validate(task)
 
-    async def list_tasks(self) -> list[TaskRead]:
-        tasks = await self.repository.get_all()
+    async def list_tasks(
+        self,
+        *,
+        title_contains: str | None,
+        completed: bool | None,
+        category_id: UUID | None,
+        limit: int,
+        offset: int,
+    ) -> list[TaskRead]:
+        tasks = await self.repository.get_all(
+            title_contains=title_contains,
+            completed=completed,
+            category_id=category_id,
+            limit=limit,
+            offset=offset,
+        )
         return [TaskRead.model_validate(task) for task in tasks]
 
     async def create_task(self, payload: TaskCreate) -> TaskRead:

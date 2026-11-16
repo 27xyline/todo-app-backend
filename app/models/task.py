@@ -3,10 +3,10 @@ from uuid import UUID
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.models.base import Base
+from app.models.base import Base, TimestampMixin
 
 
-class TaskORM(Base):
+class TaskORM(Base, TimestampMixin):
     __tablename__ = "tasks"
 
     title: Mapped[str]
